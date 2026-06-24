@@ -29,6 +29,10 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
         
+      - name: Fix directory permissions
+        run: |
+          sudo chown -R runner:runner /home/runner/work/immortalwrt/immortalwrt/immortalwrt
+        
       - name: clone repo
         run: sudo -u runner git clone -b openwrt-25.12 --single-branch --filter=blob:none https://github.com/immortalwrt/immortalwrt immortalwrt
 
