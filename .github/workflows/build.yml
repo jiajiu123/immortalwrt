@@ -10,8 +10,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: debian:bullseye
     
     steps:
       - name: init env
