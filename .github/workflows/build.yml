@@ -29,8 +29,7 @@ jobs:
         uses: actions/checkout@v4
         
       - name: clone repo
-        shell: su - runner -c 'bash {0}'
-        run: git clone -b openwrt-25.12 --single-branch --filter=blob:none https://github.com/immortalwrt/immortalwrt immortalwrt
+        run: sudo -u runner git clone -b openwrt-25.12 --single-branch --filter=blob:none https://github.com/immortalwrt/immortalwrt immortalwrt
 
       - name: cache
         uses: stupidloud/cachewrtbuild@main
@@ -40,52 +39,46 @@ jobs:
           mixkey: x86-64
 
       - name: load file
-        shell: su - runner -c 'bash {0}'
         run: |
-          cp .config immortalwrt
-          cp config-6.12 immortalwrt/target/linux/x86
-          cp feeds.conf.default immortalwrt
+          sudo -u runner cp .config immortalwrt
+          sudo -u runner cp config-6.12 immortalwrt/target/linux/x86
+          sudo -u runner cp feeds.conf.default immortalwrt
 
       - name: execute before script
-        shell: su - runner -c 'bash {0}'
         run: |
-          chmod +x before-installing-feed.sh
-          cd immortalwrt
-          bash $GITHUB_WORKSPACE/before-installing-feed.sh
+          sudo -u runner chmod +x before-installing-feed.sh
+          sudo -u runner cd immortalwrt
+          sudo -u runner bash $GITHUB_WORKSPACE/before-installing-feed.sh
 
       - name: update & install feeds
-        shell: su - runner -c 'bash {0}'
-        run: immortalwrt/scripts/feeds update -a && immortalwrt/scripts/feeds install -a
+        run: sudo -u runner immortalwrt/scripts/feeds update -a && sudo -u runner immortalwrt/scripts/feeds install -a
         
       - name: execute after script
-        shell: su - runner -c 'bash {0}'
         run: |
-          chmod +x after-installing-feed.sh
-          cd immortalwrt
-          bash $GITHUB_WORKSPACE/after-installing-feed.sh
+          sudo -u runner chmod +x after-installing-feed.sh
+          sudo -u runner cd immortalwrt
+          sudo -u runner bash $GITHUB_WORKSPACE/after-installing-feed.sh
                   
       - name: build
-        shell: su - runner -c 'bash {0}'
         id: build
         run: |
-          cd immortalwrt
-          make defconfig
-          make -j$(nproc)
-          echo "status=success" >> $GITHUB_OUTPUT
+          sudo -u runner cd immortalwrt
+          sudo -u runner make defconfig
+          sudo -u runner make -j$(nproc)
+          sudo -u runner echo "status=success" >> $GITHUB_OUTPUT
           
       - name: ssh
         if: failure()
         uses: mxschmitt/action-tmate@v3
 
       - name: Organize files
-        shell: su - runner -c 'bash {0}'
         id: organize
         if: steps.build.outputs.status == 'success' && !cancelled()
         run: |
-          cd immortalwrt/bin/targets/*/*
-          rm -rf packages
-          echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-          echo "status=success" >> $GITHUB_OUTPUT
+          sudo -u runner cd immortalwrt/bin/targets/*/*
+          sudo -u runner rm -rf packages
+          sudo -u runner echo "FIRMWARE=$PWD" >> $GITHUB_ENV
+          sudo -u runner echo "status=success" >> $GITHUB_OUTPUT
 
       - name: Upload firmware directory to artifact
         uses: actions/upload-artifact@main
