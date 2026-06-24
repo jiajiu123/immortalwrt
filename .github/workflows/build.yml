@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4   
         
       - name: clone repo
-        run: git clone -b openwrt-25.12 --single-branch --filter=blob:none https://github.com/immortalwrt/immortalwrt .
+        run: git clone -b openwrt-25.12 --single-branch --filter=blob:none https://github.com/immortalwrt/immortalwrt immortalwrt
 
       - name: cache
         uses: stupidloud/cachewrtbuild@main
