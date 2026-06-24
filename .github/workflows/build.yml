@@ -17,6 +17,7 @@ jobs:
     steps:
       - name: init env
         run: |
+          chmod -R 777 .
           export DEBIAN_FRONTEND=noninteractive
           apt update -y
           apt full-upgrade -y
