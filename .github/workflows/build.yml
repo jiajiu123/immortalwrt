@@ -9,7 +9,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     
     steps:
       - name: init env
@@ -59,7 +59,7 @@ jobs:
         run: |
           cd immortalwrt
           make defconfig
-          make -j$(nproc)
+          make -j1 V=s
           echo "status=success" >> $GITHUB_OUTPUT
           
       - name: ssh
