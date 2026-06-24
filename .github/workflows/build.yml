@@ -27,13 +27,13 @@ jobs:
         run: |
           useradd -m -s /bin/bash runner
           echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-      
+          
+      - name: checkout
+        uses: actions/checkout@v4
+        
       - name: clone repo
         shell: su - runner -c 'bash {0}'
         run: git clone -b openwrt-25.12 --single-branch --filter=blob:none https://github.com/immortalwrt/immortalwrt
-      
-      - name: checkout
-        uses: actions/checkout@v4
 
       - name: cache
         uses: stupidloud/cachewrtbuild@main
