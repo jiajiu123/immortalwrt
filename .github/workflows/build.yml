@@ -59,7 +59,7 @@ jobs:
         run: |
           cd immortalwrt
           make defconfig
-          make -j1 V=s
+          make -j$(nproc)
           echo "status=success" >> $GITHUB_OUTPUT
           
       - name: ssh
