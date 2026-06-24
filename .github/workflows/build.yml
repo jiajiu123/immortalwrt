@@ -7,20 +7,29 @@ on:
 env:
   TZ: Asia/Shanghai
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: debian:bullseye
     
     steps:
       - name: init env
         run: |
           export DEBIAN_FRONTEND=noninteractive
-          sudo apt update -y
-          sudo apt full-upgrade -y
-          sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
-          sudo timedatectl set-timezone "$TZ"
-          
+          apt update -y
+          apt full-upgrade -y
+          apt install -y sudo timedatectl ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
+          timedatectl set-timezone "$TZ"
+
+      - name: create user
+        run: |
+          useradd -m -s /bin/bash runner
+          echo "runner ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+      
       - name: clone repo
+        shell: su - runner -c 'bash {0}'
         run: git clone -b openwrt-25.12 --single-branch --filter=blob:none https://github.com/immortalwrt/immortalwrt
       
       - name: checkout
@@ -34,27 +43,32 @@ jobs:
           mixkey: x86-64
 
       - name: load file
+        shell: su - runner -c 'bash {0}'
         run: |
           cp .config immortalwrt
           cp config-6.12 immortalwrt/target/linux/x86
           cp feeds.conf.default immortalwrt
 
       - name: execute before script
+        shell: su - runner -c 'bash {0}'
         run: |
           chmod +x before-installing-feed.sh
           cd immortalwrt
           bash $GITHUB_WORKSPACE/before-installing-feed.sh
 
       - name: update & install feeds
+        shell: su - runner -c 'bash {0}'
         run: immortalwrt/scripts/feeds update -a && immortalwrt/scripts/feeds install -a
         
       - name: execute after script
+        shell: su - runner -c 'bash {0}'
         run: |
           chmod +x after-installing-feed.sh
           cd immortalwrt
           bash $GITHUB_WORKSPACE/after-installing-feed.sh
                   
       - name: build
+        shell: su - runner -c 'bash {0}'
         id: build
         run: |
           cd immortalwrt
@@ -67,6 +81,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
 
       - name: Organize files
+        shell: su - runner -c 'bash {0}'
         id: organize
         if: steps.build.outputs.status == 'success' && !cancelled()
         run: |
